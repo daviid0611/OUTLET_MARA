@@ -21,6 +21,7 @@ const productoSchema = new mongoose.Schema({
     nombre: String,
     precio: Number,
     categoria: String,
+    etiquetaEstado: String, // NUEVO CAMPO: Para las etiquetas de "Open Box", etc.
     stock: Number,
     imagen: String
 });
@@ -129,41 +130,20 @@ app.post('/api/nueva-venta', async (req, res) => {
     } catch (error) { res.status(500).json({ mensaje: "Error servidor" }); }
 });
 
-// --- EDITAR VENTA (ACTUALIZADO) ---
 app.put('/api/ventas/:id', async (req, res) => {
     const id = parseInt(req.params.id);
-    const { cliente, total, pagado, items, referenciaPago } = req.body; // AHORA RECIBIMOS REFERENCIA
+    const { cliente, total, pagado, items, referenciaPago } = req.body;
     try {
         const venta = await Venta.findOne({ id: id });
         if (!venta) return res.status(404).json({ mensaje: "No existe" });
 
-        // Ajuste de stock
-        if (venta.items) {
-            for (let i of venta.items) {
-                const p = await Producto.findOne({ id: i.id });
-                if (p) { p.stock += Number(i.cantidad); await p.save(); }
-            }
-        }
-        if (items) {
-            for (let i of items) {
-                const p = await Producto.findOne({ id: i.id });
-                if (p) { p.stock -= Number(i.cantidad); await p.save(); }
-            }
-        }
+        if (venta.items) { for (let i of venta.items) { const p = await Producto.findOne({ id: i.id }); if (p) { p.stock += Number(i.cantidad); await p.save(); } } }
+        if (items) { for (let i of items) { const p = await Producto.findOne({ id: i.id }); if (p) { p.stock -= Number(i.cantidad); await p.save(); } } }
 
-        // Recalculos
-        const nTotal = Number(total);
-        const nPagado = Number(pagado);
-        const nDeuda = nTotal - nPagado;
+        const nTotal = Number(total); const nPagado = Number(pagado); const nDeuda = nTotal - nPagado;
         
-        venta.cliente = cliente;
-        venta.items = items;
-        venta.total = nTotal;
-        venta.pagado = nPagado;
-        venta.deuda = nDeuda > 0 ? nDeuda : 0;
-        venta.referenciaPago = referenciaPago || venta.referenciaPago; // ACTUALIZAMOS REFERENCIA
+        venta.cliente = cliente; venta.items = items; venta.total = nTotal; venta.pagado = nPagado; venta.deuda = nDeuda > 0 ? nDeuda : 0; venta.referenciaPago = referenciaPago || venta.referenciaPago;
         
-        // Logica de estado
         if(venta.tipo === 'donacion') venta.estado = 'Donación';
         else if (venta.metodoPago.includes('Nequi')) venta.estado = 'Pagado (Nequi)';
         else venta.estado = nDeuda <= 0 ? 'Pagado' : (nPagado == 0 ? 'Debe' : 'Parcial');
@@ -179,8 +159,7 @@ app.post('/api/abonar', async (req, res) => {
         const v = await Venta.findOne({ id: idVenta });
         if (!v) return res.status(404).json({ mensaje: "No existe" });
         if (montoAbono > v.deuda) return res.status(400).json({ mensaje: "Monto excesivo" });
-        v.pagado += Number(montoAbono);
-        v.deuda -= Number(montoAbono);
+        v.pagado += Number(montoAbono); v.deuda -= Number(montoAbono);
         v.estado = v.deuda <= 0 ? 'Pagado' : 'Parcial';
         await v.save();
         res.json({ mensaje: "Abonado" });
@@ -192,14 +171,11 @@ app.delete('/api/ventas/:id', async (req, res) => {
     try {
         const v = await Venta.findOne({ id: id });
         if (v && v.items) {
-            for (let i of v.items) {
-                const p = await Producto.findOne({ id: i.id });
-                if (p) { p.stock += Number(i.cantidad); await p.save(); }
-            }
+            for (let i of v.items) { const p = await Producto.findOne({ id: i.id }); if (p) { p.stock += Number(i.cantidad); await p.save(); } }
             await Venta.deleteOne({ id: id });
             res.json({ mensaje: "Eliminado" });
         } else res.status(404).json({ mensaje: "No encontrado" });
     } catch (error) { res.status(500).json({ mensaje: "Error" }); }
 });
 
-app.listen(puerto, () => console.log(`🔥 Servidor listo en ${puerto}`));
+app.listen(puerto, () => console.log(`🔥 Servidor Outlet Mara listo en puerto ${puerto}`));
