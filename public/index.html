@@ -18,7 +18,7 @@
         .icon-btn { background: none; border: none; font-size: 24px; cursor: pointer; padding: 5px; color: #555; transition: 0.2s; }
         .icon-btn:active { transform: scale(0.9); }
         .menu-btn { color: var(--primary); } .filter-btn { color: var(--secondary); }
-        .sidebar { height: 100vh; width: 280px; position: fixed; top: 0; background: white; box-shadow: 4px 0 15px rgba(0,0,0,0.1); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2000; padding: 25px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+        .sidebar { height: 100vh; width: 280px; position: fixed; top: 0; background: white; box-shadow: 4px 0 15px rgba(0,0,0,0.1); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2000; padding: 25px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
         .sidebar-left { left: -280px; } .sidebar-left.active { left: 0; }
         .sidebar-right { right: -280px; } .sidebar-right.active { right: 0; }
         .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0; }
@@ -26,9 +26,21 @@
         .btn-login { background: #f3e5f5; color: var(--primary) !important; box-shadow: none !important; }
         .btn-logout { background: #ffebee !important; color: var(--danger) !important; }
         .bg-pos { background: var(--secondary); } .bg-donate { background: var(--donation); } .bg-credit { background: var(--warning); color: #333; } .bg-admin { background: var(--primary); }
+        
+        /* Botones Categorías y Submenús */
+        .cat-btn-wrapper { margin-bottom: 2px; }
         .cat-btn { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 10px; background: white; color: #444; font-weight: 500; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 12px; font-size: 0.95rem; transition: 0.2s; }
         .cat-btn.active { background: var(--secondary); color: white; border-color: var(--secondary); font-weight: 700; box-shadow: 0 4px 10px rgba(0,137,123,0.3); }
         .cat-icon { width: 25px; text-align: center; }
+        .chevron { margin-left: auto; transition: transform 0.3s; font-size: 0.8rem; color: #999; }
+        .cat-btn.expanded .chevron { transform: rotate(180deg); }
+        
+        .submenu { display: none; flex-direction: column; padding-left: 30px; margin-top: 5px; gap: 5px; }
+        .submenu.active { display: flex; }
+        .sub-cat-btn { width: 100%; padding: 8px 10px; border: none; background: transparent; text-align: left; cursor: pointer; color: #666; font-size: 0.9rem; display: flex; align-items: center; border-left: 2px solid transparent; border-radius: 0 8px 8px 0; transition: 0.2s; }
+        .sub-cat-btn:hover { color: var(--primary); background: #f9f9f9; }
+        .sub-cat-btn.active { border-left-color: var(--secondary); color: var(--secondary); font-weight: bold; background: #e0f2f1; }
+
         .fab-cart { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4); cursor: pointer; z-index: 1400; transition: transform 0.2s; }
         .fab-cart:active { transform: scale(0.9); }
         .cart-badge { position: absolute; top: 0; right: 0; background: var(--danger); color: white; font-size: 12px; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; }
@@ -91,30 +103,22 @@
             <div class="tc-text">
                 <h4>1. Identificación del vendedor</h4>
                 <p>La tienda Outlet Mara es operada con domicilio en Funza, Cundinamarca, Colombia.</p>
-
                 <h4>2. Aceptación de los términos</h4>
                 <p>Al realizar una compra en este sitio web, el cliente declara haber leído y aceptado estos Términos y Condiciones.</p>
-
                 <h4>3. Naturaleza de los productos</h4>
                 <p>Los productos comercializados en esta tienda son, en su mayoría, productos con empaque o caja abollada, deteriorada o con imperfectos externos, razón por la cual se ofrecen a un precio reducido.</p>
                 <p>⚠️ <strong>Importante:</strong> El daño es únicamente estético en el empaque. El producto interno se encuentra en condiciones funcionales, salvo que se indique lo contrario en la descripción. El cliente acepta esta condición al momento de la compra.</p>
-
                 <h4>4. Precios</h4>
                 <p>Todos los precios están expresados en pesos colombianos (COP). Los precios pueden cambiar sin previo aviso.</p>
-
                 <h4>5. Proceso de compra</h4>
                 <p>La compra se entiende aceptada cuando el pago ha sido confirmado por la plataforma de pago. Outlet Mara se reserva el derecho de cancelar una orden en caso de errores evidentes de precio o falta de inventario.</p>
-
                 <h4>6. Política de cambios y devoluciones</h4>
                 <p>Debido a que los productos se comercializan a precio reducido por presentar caja o empaque abollado, <strong>no se aceptan cambios ni devoluciones.</strong></p>
-
                 <h4>7. Protección de datos</h4>
                 <p>Los datos personales recolectados serán utilizados únicamente para procesar pedidos, enviar información relacionada con la compra y brindar atención al cliente.</p>
-
                 <h4>8. Modificaciones</h4>
                 <p>Outlet Mara podrá modificar estos términos en cualquier momento.</p>
             </div>
-
             <button onclick="aceptarTerminos()" style="width:100%; background:var(--secondary); color:white; padding:15px; border:none; border-radius:10px; font-weight:bold; font-size:1.1rem; cursor:pointer;">HE LEÍDO Y ACEPTO LOS TÉRMINOS</button>
         </div>
     </div>
@@ -231,14 +235,19 @@
                     <option value="" disabled selected>Categoría</option>
                     <option value="Comida">Comida</option>
                     <option value="Nutricionales">Nutricionales</option>
-                    <option value="Cuidado Personal">Cuidado Personal</option>
+                    <optgroup label="Cuidado Personal">
+                        <option value="Cuidado Personal - Caballero">Caballero</option>
+                        <option value="Cuidado Personal - Dama">Dama</option>
+                    </optgroup>
                     <option value="Hogar">Hogar</option>
                     <option value="DecoHogar">DecoHogar</option>
                     <option value="Escolares">Escolares</option>
-                    <option value="Ropa - Caballero">Ropa - Caballero</option>
-                    <option value="Ropa - Dama">Ropa - Dama</option>
-                    <option value="Ropa - Niños">Ropa - Niños</option>
-                    <option value="Calzado">Calzado</option>
+                    <optgroup label="Ropa">
+                        <option value="Ropa - Caballero">Caballero</option>
+                        <option value="Ropa - Dama">Dama</option>
+                        <option value="Ropa - Niños">Niños</option>
+                        <option value="Ropa - Calzado">Calzado</option>
+                    </optgroup>
                     <option value="Tecnología">Tecnología</option>
                     <option value="Mascotas">Mascotas</option>
                     <option value="Arte">Arte</option>
@@ -268,26 +277,7 @@
     <div id="modal-deudores" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h3>Deudores</h3><button class="btn-close" onclick="cerrarModal('modal-deudores')">&times;</button></div><div style="overflow-x:auto;"><table id="tabla-deudores"><thead><tr><th>Cliente</th><th>Deuda</th><th>Acción</th></tr></thead><tbody></tbody></table></div></div></div>
     <div id="modal-reportes" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h3>Movimientos</h3><button class="btn-close" onclick="cerrarModal('modal-reportes')">&times;</button></div><div style="background:#e8f5e9;padding:15px;border-radius:12px;text-align:center;margin-bottom:15px;"><h4 style="margin:0;color:#2e7d32;font-size:0.9rem;">DINERO EN CAJA</h4><span id="total-recaudado-display" style="font-size:2rem;font-weight:800;color:#2e7d32;">$0</span></div><div style="overflow-x:auto;"><table id="tabla-historial"><thead><tr><th>Fecha</th><th>Estado</th><th>Cliente</th><th>Total</th><th></th></tr></thead><tbody></tbody></table></div></div></div>
     <div id="modal-confirm" class="modal-overlay"><div class="modal-content" style="text-align:center;"><h3>¿Eliminar?</h3><div style="display:flex;gap:10px;justify-content:center;margin-top:15px;"><button id="btn-si-confirm" style="background:var(--danger);color:white;border:none;padding:10px;border-radius:8px;">Sí, Eliminar</button><button onclick="cerrarModal('modal-confirm')" style="background:#eee;border:none;padding:10px;border-radius:8px;">No</button></div></div></div>
-    
-    <div id="modal-editar-venta" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Editar Venta</h3><button class="btn-close" onclick="cerrarModal('modal-editar-venta')">&times;</button></div>
-            <form id="form-editar-venta">
-                <input type="hidden" id="edit-venta-id">
-                <label>Cliente:</label><input type="text" id="edit-venta-cliente" class="form-control">
-                <label>Referencia Nequi:</label><input type="text" id="edit-venta-ref" class="form-control" placeholder="Opcional">
-                <div style="background:#f9fafb;padding:10px;border-radius:8px;margin:10px 0;">
-                    <label>Productos:</label>
-                    <table style="width:100%"><thead><tr><th>Prod</th><th>Cant</th><th>Sub</th><th></th></tr></thead><tbody id="lista-items-edicion"></tbody></table>
-                </div>
-                <div style="display:flex;gap:10px;">
-                    <div><label>Total:</label><input type="number" id="edit-venta-total" class="form-control" readonly></div>
-                    <div><label>Pagado:</label><input type="number" id="edit-venta-pagado" class="form-control"></div>
-                </div>
-                <button type="submit" style="width:100%;background:var(--primary);color:white;padding:12px;border:none;border-radius:8px;margin-top:10px;">Guardar Cambios</button>
-            </form>
-        </div>
-    </div>
+    <div id="modal-editar-venta" class="modal-overlay"><div class="modal-content"><div class="modal-header"><h3>Editar Venta</h3><button class="btn-close" onclick="cerrarModal('modal-editar-venta')">&times;</button></div><form id="form-editar-venta"><input type="hidden" id="edit-venta-id"><label>Cliente:</label><input type="text" id="edit-venta-cliente" class="form-control"><label>Referencia Nequi:</label><input type="text" id="edit-venta-ref" class="form-control" placeholder="Opcional"><div style="background:#f9fafb;padding:10px;border-radius:8px;margin:10px 0;"><label>Productos:</label><table style="width:100%"><thead><tr><th>Prod</th><th>Cant</th><th>Sub</th><th></th></tr></thead><tbody id="lista-items-edicion"></tbody></table></div><div style="display:flex;gap:10px;"><div><label>Total:</label><input type="number" id="edit-venta-total" class="form-control" readonly></div><div><label>Pagado:</label><input type="number" id="edit-venta-pagado" class="form-control"></div></div><button type="submit" style="width:100%;background:var(--primary);color:white;padding:12px;border:none;border-radius:8px;margin-top:10px;">Guardar Cambios</button></form></div></div>
 
     <script>
         const API_URL = '/api';
@@ -295,6 +285,7 @@
         let productosGlobal = [];
         let carrito = []; 
         let categoriaSeleccionada = '';
+        let esGrupoSeleccionado = false; // Variable para saber si filtramos por prefijo
         let idParaEliminar = null;
         let idVentaParaEliminar = null;
         let modoActualPOS = 'venta';
@@ -328,8 +319,8 @@
             const optDescuento = document.getElementById('opt-descuento');
             const selectEtiqueta = document.getElementById('prod-etiqueta');
             
-            // Aplica a Hogar, DecoHogar y Cuidado Personal
-            if(cat === 'Hogar' || cat === 'DecoHogar' || cat === 'Cuidado Personal') {
+            // Aplica a Hogar, DecoHogar y TODO Cuidado Personal
+            if(cat === 'Hogar' || cat === 'DecoHogar' || cat.startsWith('Cuidado Personal')) {
                 optDescuento.style.display = 'block';
             } else {
                 optDescuento.style.display = 'none';
@@ -496,44 +487,88 @@
             cerrarModal('modal-editar-venta'); notificar("Venta actualizada", "success"); abrirReportes(); cargarInventario();
         });
 
-        // --- CATEGORÍAS Y UI ---
+        // --- CATEGORÍAS SUBMENÚ Y UI ---
         function renderCategorias() {
             const nav = document.getElementById('lista-categorias');
             
-            // NUEVO ARREGLO DE CATEGORÍAS CON ICONOS
             const catsConfig = [
                 {n:'Comida',i:'fa-utensils'},
                 {n:'Nutricionales',i:'fa-leaf'},
-                {n:'Cuidado Personal',i:'fa-pump-soap'},
+                {n:'Cuidado Personal',i:'fa-pump-soap', sub: ['Caballero', 'Dama']},
                 {n:'Hogar',i:'fa-home'},
                 {n:'DecoHogar',i:'fa-couch'},
                 {n:'Escolares',i:'fa-pencil-alt'},
-                {n:'Ropa - Caballero',i:'fa-male'},
-                {n:'Ropa - Dama',i:'fa-female'},
-                {n:'Ropa - Niños',i:'fa-child'},
-                {n:'Calzado',i:'fa-shoe-prints'},
+                {n:'Ropa',i:'fa-tshirt', sub: ['Caballero', 'Dama', 'Niños', 'Calzado']},
                 {n:'Tecnología',i:'fa-laptop'},
                 {n:'Mascotas',i:'fa-paw'},
                 {n:'Arte',i:'fa-palette'},
                 {n:'Otro',i:'fa-tag'}
             ];
             
-            nav.innerHTML = `<button class="cat-btn active" onclick="filtrarPorCategoria('')"><span class="cat-icon"><i class="fas fa-th-large"></i></span> Todos</button>`;
-            catsConfig.forEach(c => nav.innerHTML += `<button class="cat-btn" onclick="filtrarPorCategoria('${c.n}')"><span class="cat-icon"><i class="fas ${c.i}"></i></span> ${c.n}</button>`);
+            let html = `<button class="cat-btn active" onclick="filtrarPorCategoria('')" data-cat=""><span class="cat-icon"><i class="fas fa-th-large"></i></span> Todos</button>`;
+            
+            catsConfig.forEach((c, index) => {
+                if(c.sub) {
+                    const subId = `submenu-${index}`;
+                    html += `
+                    <div class="cat-btn-wrapper">
+                        <button class="cat-btn" onclick="toggleSubmenu('${subId}', '${c.n}')" data-cat="${c.n}">
+                            <span class="cat-icon"><i class="fas ${c.i}"></i></span> ${c.n}
+                            <i class="fas fa-chevron-down chevron"></i>
+                        </button>
+                        <div id="${subId}" class="submenu">`;
+                    
+                    c.sub.forEach(subCat => {
+                        const fullName = `${c.n} - ${subCat}`;
+                        html += `<button class="sub-cat-btn" onclick="filtrarPorCategoria('${fullName}')" data-cat="${fullName}">- ${subCat}</button>`;
+                    });
+                    
+                    html += `</div></div>`;
+                } else {
+                    html += `<button class="cat-btn" onclick="filtrarPorCategoria('${c.n}')" data-cat="${c.n}"><span class="cat-icon"><i class="fas ${c.i}"></i></span> ${c.n}</button>`;
+                }
+            });
+            nav.innerHTML = html;
         }
         
-        function filtrarPorCategoria(cat) {
-            categoriaSeleccionada = cat;
-            document.getElementById('cat-actual-texto').innerText = cat || 'Todos';
-            document.querySelectorAll('.cat-btn').forEach(b => { b.classList.remove('active'); if(b.innerText.includes(cat||'Todos')) b.classList.add('active'); });
-            filtrarProductos();
-            if(window.innerWidth < 768) toggleCats(); 
+        function toggleSubmenu(id, mainCat) {
+            const submenu = document.getElementById(id);
+            const btn = submenu.previousElementSibling;
+            submenu.classList.toggle('active');
+            btn.classList.toggle('expanded');
+            // Al hacer clic en el padre, filtra por todo lo que empiece con ese nombre
+            filtrarPorCategoria(mainCat, true);
         }
+
+        function filtrarPorCategoria(cat, isGroup = false) {
+            categoriaSeleccionada = cat;
+            esGrupoSeleccionado = isGroup;
+            document.getElementById('cat-actual-texto').innerText = cat || 'Todos';
+            
+            document.querySelectorAll('.cat-btn, .sub-cat-btn').forEach(b => {
+                b.classList.remove('active');
+                if(b.getAttribute('data-cat') === cat) b.classList.add('active');
+            });
+            
+            filtrarProductos();
+            // Solo cierra el menú lateral si seleccionó un final (no si abrió un submenú)
+            if(window.innerWidth < 768 && !isGroup) toggleCats(); 
+        }
+
         function filtrarProductos() {
             const txt = document.getElementById('buscador').value.toLowerCase();
-            const filtrados = productosGlobal.filter(p => p.nombre.toLowerCase().includes(txt) && (categoriaSeleccionada==='' || p.categoria===categoriaSeleccionada));
+            const filtrados = productosGlobal.filter(p => {
+                const matchNombre = p.nombre.toLowerCase().includes(txt);
+                let matchCat = false;
+                if (categoriaSeleccionada === '') matchCat = true;
+                else if (esGrupoSeleccionado) matchCat = p.categoria.startsWith(categoriaSeleccionada);
+                else matchCat = p.categoria === categoriaSeleccionada;
+                
+                return matchNombre && matchCat;
+            });
             renderizar(filtrados);
         }
+
         async function cargarInventario() {
             try {
                 const res = await fetch(`${API_URL}/productos`);
@@ -621,8 +656,6 @@
             itemsEnEdicion.forEach((i,idx) => { t+=i.precio*i.cantidad; tb.innerHTML+=`<tr><td>${i.nombre}</td><td><input type="number" min="1" value="${i.cantidad}" onchange="actualizarCantidadItem(${index}, this.value)" style="width:50px;"></td><td>${ventaEnEdicionTipo==='donacion'?'-':'$'+sub}</td><td><button onclick="eliminarItemEdicion(${index})" style="color:red;border:none;background:none;">x</button></td></tr>`; });
             document.getElementById('edit-venta-total').value = t;
         }
-        
-        // Search POS Logic
         const searchPos = document.getElementById('pos-search');
         if(searchPos) searchPos.addEventListener('input', (e) => {
             const val = e.target.value.toLowerCase();
@@ -632,7 +665,6 @@
             res.style.display='block';
             fil.forEach(p => { const d=document.createElement('div'); d.className='search-item'; d.innerText=p.nombre; d.onclick=()=>{ searchPos.value=p.nombre; document.getElementById('pos-selected-id').value=p.id; res.style.display='none'; }; res.appendChild(d); });
         });
-        
         async function abrirDeudores() {
             const res = await fetch(`${API_URL}/ventas`); const v = await res.json();
             const tb = document.querySelector('#tabla-deudores tbody'); tb.innerHTML='';
