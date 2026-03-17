@@ -16,11 +16,10 @@ mongoose.connect(process.env.MONGO_URI)
     .catch(err => console.error('❌ Error conectando a BD:', err));
 
 // --- 2. MODELOS ---
-
 const productoSchema = new mongoose.Schema({
     id: { type: Number, unique: true },
     nombre: String,
-    descripcion: String, // NUEVO CAMPO: Descripción del producto
+    descripcion: String,
     precio: Number,
     categoria: String,
     etiquetaEstado: String,
@@ -45,25 +44,18 @@ const ventaSchema = new mongoose.Schema({
 const Venta = mongoose.model('Venta', ventaSchema);
 
 // --- RUTAS DE AUTENTICACIÓN ---
-
 app.post('/api/login', (req, res) => {
     const { password } = req.body;
-    if (password === "mara123") {
-        res.json({ exito: true });
-    } else {
-        res.status(401).json({ exito: false });
-    }
+    if (password === "mara123") res.json({ exito: true });
+    else res.status(401).json({ exito: false });
 });
 
 // --- RUTAS DE PRODUCTOS ---
-
 app.get('/api/productos', async (req, res) => {
     try {
         const productos = await Producto.find().sort({ nombre: 1 });
         res.json(productos);
-    } catch (error) {
-        res.status(500).json({ error: 'Error al obtener productos' });
-    }
+    } catch (error) { res.status(500).json({ error: 'Error al obtener productos' }); }
 });
 
 app.post('/api/productos', async (req, res) => {
@@ -73,9 +65,7 @@ app.post('/api/productos', async (req, res) => {
         const nuevoProducto = new Producto({ id: nuevoId, ...req.body });
         await nuevoProducto.save();
         res.json({ mensaje: "Producto guardado", producto: nuevoProducto });
-    } catch (error) {
-        res.status(500).json({ error: 'Error guardando producto' });
-    }
+    } catch (error) { res.status(500).json({ error: 'Error guardando producto' }); }
 });
 
 app.put('/api/productos/:id', async (req, res) => {
@@ -96,7 +86,6 @@ app.delete('/api/productos/:id', async (req, res) => {
 });
 
 // --- RUTAS DE VENTAS (POS Y WEB) ---
-
 app.post('/api/nueva-venta', async (req, res) => {
     const { cliente, carrito, tipo, pagoRealizado, metodoPago, referenciaPago } = req.body; 
     let totalTransaccion = 0;
@@ -110,20 +99,22 @@ app.post('/api/nueva-venta', async (req, res) => {
             prod.stock -= item.cantidad;
             await prod.save();
             
-            if (tipo !== 'donacion') {
-                totalTransaccion += (prod.precio * item.cantidad);
-            }
+            if (tipo !== 'donacion') totalTransaccion += (prod.precio * item.cantidad);
         }
 
         let deuda = 0;
         let estado = 'Pagado';
+        let pagadoFinal = Number(pagoRealizado);
 
         if (tipo === 'donacion') {
-            deuda = 0; estado = 'Donación';
+            deuda = 0; estado = 'Donación'; pagadoFinal = 0;
         } else {
-            if (metodoPago === 'Bold Web') { // Actualizado a Bold
-                deuda = 0;
-                estado = 'Pagado (Bold)';
+            if (metodoPago === 'Bold Web') {
+                deuda = 0; estado = 'Pagado (Bold)';
+            } else if (metodoPago === 'Efectivo Web') {
+                deuda = totalTransaccion; 
+                estado = 'Pendiente'; // Requiere que el admin lo apruebe
+                pagadoFinal = 0;
             } else {
                 if (pagoRealizado < totalTransaccion) {
                     deuda = totalTransaccion - pagoRealizado;
@@ -141,7 +132,7 @@ app.post('/api/nueva-venta', async (req, res) => {
             referenciaPago: referenciaPago || '',
             items: carrito,
             total: totalTransaccion,
-            pagado: tipo === 'donacion' ? 0 : Number(pagoRealizado),
+            pagado: pagadoFinal,
             deuda: Number(deuda),
             estado: estado
         });
@@ -149,14 +140,26 @@ app.post('/api/nueva-venta', async (req, res) => {
         await nuevaVenta.save();
         res.json({ mensaje: "Venta registrada exitosamente" });
 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ mensaje: "Error procesando la venta" });
-    }
+    } catch (error) { res.status(500).json({ mensaje: "Error procesando la venta" }); }
+});
+
+// NUEVA RUTA: Aprobar pago en efectivo
+app.put('/api/ventas/aprobar/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const venta = await Venta.findOne({ id: id });
+        if (!venta) return res.status(404).json({ mensaje: "Venta no encontrada" });
+
+        venta.pagado = venta.total;
+        venta.deuda = 0;
+        venta.estado = 'Pagado (Efectivo)';
+
+        await venta.save();
+        res.json({ mensaje: "Pago en efectivo aprobado" });
+    } catch (error) { res.status(500).json({ mensaje: "Error aprobando venta" }); }
 });
 
 // --- RUTAS DE GESTIÓN (HISTORIAL Y ABONOS) ---
-
 app.get('/api/ventas', async (req, res) => {
     try {
         const ventas = await Venta.find().sort({ id: -1 });
@@ -188,14 +191,12 @@ app.put('/api/ventas/:id', async (req, res) => {
         const ventaAnterior = await Venta.findOne({ id: id });
         if (!ventaAnterior) return res.status(404).json({ mensaje: "Venta no encontrada" });
 
-        // Devolver stock viejo
         if (ventaAnterior.items) {
             for (let item of ventaAnterior.items) {
                 const prod = await Producto.findOne({ id: item.id });
                 if (prod) { prod.stock += Number(item.cantidad); await prod.save(); }
             }
         }
-        // Restar stock nuevo
         if (items) {
             for (let item of items) {
                 const prod = await Producto.findOne({ id: item.id });
@@ -216,6 +217,7 @@ app.put('/api/ventas/:id', async (req, res) => {
         
         if (ventaAnterior.tipo === 'donacion') ventaAnterior.estado = 'Donación';
         else if (ventaAnterior.metodoPago && ventaAnterior.metodoPago.includes('Bold')) ventaAnterior.estado = 'Pagado (Bold)';
+        else if (ventaAnterior.metodoPago === 'Efectivo Web' && nuevaDeuda > 0) ventaAnterior.estado = 'Pendiente';
         else ventaAnterior.estado = nuevaDeuda <= 0 ? 'Pagado' : (nuevoPagado == 0 ? 'Debe' : 'Parcial');
 
         await ventaAnterior.save();
