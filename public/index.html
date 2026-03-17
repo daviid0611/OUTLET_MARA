@@ -27,7 +27,6 @@
         .btn-logout { background: #ffebee !important; color: var(--danger) !important; }
         .bg-pos { background: var(--secondary); } .bg-donate { background: var(--donation); } .bg-credit { background: var(--warning); color: #333; } .bg-admin { background: var(--primary); }
         
-        /* Botones Categorías y Submenús */
         .cat-btn-wrapper { margin-bottom: 2px; }
         .cat-btn { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 10px; background: white; color: #444; font-weight: 500; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 12px; font-size: 0.95rem; transition: 0.2s; }
         .cat-btn.active { background: var(--secondary); color: white; border-color: var(--secondary); font-weight: 700; box-shadow: 0 4px 10px rgba(0,137,123,0.3); }
@@ -80,7 +79,6 @@
         .pos-grid { display: flex; flex-direction: column; gap: 15px; } .pos-right { background: #f9fafb; padding: 15px; border-radius: 12px; border: 1px solid #eee; }
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; } th, td { border-bottom: 1px solid #eee; padding: 10px; text-align: left; }
         
-        /* ESTILOS T&C Y ETIQUETAS */
         .tc-text { font-size: 0.85rem; color: #555; line-height: 1.6; text-align: justify; margin-bottom: 20px; }
         .tc-text h4 { color: var(--primary); margin: 15px 0 5px 0; font-size: 0.95rem; }
         .tc-text p { margin-bottom: 10px; }
@@ -108,7 +106,7 @@
                 <h4>4. Precios</h4>
                 <p>Todos los precios están expresados en pesos colombianos (COP). Los precios pueden cambiar sin previo aviso.</p>
                 <h4>5. Proceso de compra</h4>
-                <p>La compra se entiende aceptada cuando el pago ha sido confirmado por la plataforma de pago. Outlet Mara se reserva el derecho de cancelar una orden en caso de errores evidentes de precio o falta de inventario.</p>
+                <p>La compra se entiende aceptada cuando el pago ha sido confirmado. Outlet Mara se reserva el derecho de cancelar una orden en caso de errores evidentes de precio o falta de inventario.</p>
                 <h4>6. Política de cambios y devoluciones</h4>
                 <p>Debido a que los productos se comercializan a precio reducido por presentar caja o empaque abollado, <strong>no se aceptan cambios ni devoluciones.</strong></p>
                 <h4>7. Protección de datos</h4>
@@ -200,12 +198,18 @@
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:1.2rem; font-weight:bold; margin-bottom:15px;">
                 <span>Total:</span> <span id="total-cliente">$0</span>
             </div>
+            
             <label style="font-size: 0.85rem; color: #666;">Tu Nombre <span style="color:red;">(Obligatorio)</span>:</label>
             <input type="text" id="nombre-cliente-web" class="form-control" placeholder="Escribe tu nombre aquí" required>
             
-            <button onclick="prepararPagoWeb()" style="width: 100%; background: var(--bold-color); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px;">
-                <i class="fas fa-credit-card"></i> Pagar con BOLD
-            </button>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button onclick="prepararPagoWeb()" style="width: 100%; background: var(--bold-color); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px;">
+                    <i class="fas fa-credit-card"></i> Pagar con BOLD
+                </button>
+                <button onclick="enviarPedidoEfectivo()" style="width: 100%; background: var(--success); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px;">
+                    <i class="fas fa-money-bill-wave"></i> Pagar en Efectivo
+                </button>
+            </div>
         </div>
     </div>
 
@@ -236,7 +240,7 @@
     <div id="modal-success" class="modal-overlay">
         <div class="modal-content" style="max-width: 320px; text-align: center; border-radius: 20px;">
             <div style="margin: 20px 0;"><i class="fas fa-check-circle" style="font-size: 4rem; color: var(--success);"></i></div>
-            <h2 style="color: var(--success); margin-bottom: 10px;">¡Pago Confirmado!</h2>
+            <h2 style="color: var(--success); margin-bottom: 10px;">¡Pedido Confirmado!</h2>
             <p style="color: #555; font-size: 1rem; margin-bottom: 5px;">Gracias por tu compra.</p>
             <p style="color: #888; font-size: 0.9rem; margin-bottom: 25px;">Tu pedido ha sido registrado correctamente en nuestro sistema.</p>
             <button onclick="cerrarModal('modal-success')" style="background: var(--primary); color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer;">Aceptar</button>
@@ -488,11 +492,14 @@
             document.getElementById('modal-bold').style.display = 'flex';
         }
 
+        // FUNCIONES DE PAGO
         async function enviarPedidoWeb() {
-            const cliente = document.getElementById('nombre-cliente-web').value.trim();
+            const clienteInput = document.getElementById('nombre-cliente-web').value.trim();
+            if(!clienteInput) { return notificar("Por favor, ingresa tu nombre para continuar", "error"); }
+            if(carrito.length === 0) return notificar("El carrito está vacío", "error");
             
             let total = 0; carrito.forEach(i => total += i.precio * i.cantidad);
-            const ventaData = { cliente, carrito, tipo: 'web', pagoRealizado: total, metodoPago: 'Bold Web', referenciaPago: '' };
+            const ventaData = { cliente: clienteInput, carrito, tipo: 'web', pagoRealizado: total, metodoPago: 'Bold Web', referenciaPago: '' };
             
             try {
                 const res = await fetch(`${API_URL}/nueva-venta`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(ventaData) });
@@ -504,36 +511,66 @@
             } catch(e) { notificar("Error de conexión", "error"); }
         }
 
-        // --- ADMIN REPORTES ---
+        async function enviarPedidoEfectivo() {
+            const clienteInput = document.getElementById('nombre-cliente-web').value.trim();
+            if(!clienteInput) { return notificar("Por favor, ingresa tu nombre para continuar", "error"); }
+            if(carrito.length === 0) return notificar("El carrito está vacío", "error");
+            
+            let total = 0; carrito.forEach(i => total += i.precio * i.cantidad);
+            const ventaData = { cliente: clienteInput, carrito, tipo: 'web', pagoRealizado: 0, metodoPago: 'Efectivo Web', referenciaPago: 'Pendiente' };
+            
+            try {
+                const res = await fetch(`${API_URL}/nueva-venta`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(ventaData) });
+                if(res.ok) {
+                    carrito = []; actualizarBadge(); cerrarModal('modal-carrito-cliente');
+                    document.getElementById('modal-success').style.display = 'flex';
+                    cargarInventario();
+                } else notificar("Error procesando el pedido.", "error");
+            } catch(e) { notificar("Error de conexión", "error"); }
+        }
+
+        // --- ADMIN REPORTES (Con Ojo, Editar y Aprobar Efectivo) ---
         async function abrirReportes() {
             const res = await fetch(`${API_URL}/ventas`);
             const ventas = await res.json();
             const tbody = document.querySelector('#tabla-historial tbody'); tbody.innerHTML='';
             let total = 0;
+            
             ventas.reverse().forEach(v => {
                 if(v.tipo!=='donacion') total+=v.pagado||0;
                 
                 let estadoTxt = v.estado;
+                let colorEst = '#333';
+                if(v.estado === 'Pendiente') colorEst = 'orange';
+                else if(v.estado.includes('Pagado')) colorEst = 'green';
+                else if(v.estado === 'Debe') colorEst = 'red';
+
                 if(v.metodoPago && v.metodoPago.includes('Bold') && v.referenciaPago) {
                     estadoTxt += ` <br><small style="color:#666; font-size:0.8rem;">Ref: ${v.referenciaPago}</small>`;
+                }
+                
+                let btnAprobar = '';
+                if(v.estado === 'Pendiente') {
+                    btnAprobar = `<button onclick="aprobarVentaEfectivo(${v.id})" style="border:none;background:none;color:green;margin-right:5px;cursor:pointer;" title="Aprobar Pago Efectivo"><i class="fas fa-check-circle"></i></button>`;
                 }
                 
                 tbody.innerHTML += `
                     <tr>
                         <td>${v.fecha.split(',')[0]}</td>
-                        <td>${estadoTxt}</td>
+                        <td style="color:${colorEst}; font-weight:bold;">${estadoTxt}</td>
                         <td>${v.cliente}</td>
                         <td>$${v.total.toLocaleString()}</td>
                         <td>
-                            <button onclick="toggleDetalleVenta(${v.id})" style="border:none;background:none;color:var(--secondary);margin-right:5px;cursor:pointer;"><i class="fas fa-eye"></i></button>
-                            <button onclick="editarVenta(${v.id})" style="border:none;background:none;color:#333;margin-right:5px;cursor:pointer;"><i class="fas fa-pen"></i></button>
-                            <button onclick="eliminarVenta(${v.id})" style="border:none;background:none;color:red;cursor:pointer;"><i class="fas fa-trash"></i></button>
+                            ${btnAprobar}
+                            <button onclick="toggleDetalleVenta(${v.id})" style="border:none;background:none;color:var(--secondary);margin-right:5px;cursor:pointer;" title="Ver Detalles"><i class="fas fa-eye"></i></button>
+                            <button onclick="editarVenta(${v.id})" style="border:none;background:none;color:#333;margin-right:5px;cursor:pointer;" title="Editar Venta"><i class="fas fa-pen"></i></button>
+                            <button onclick="eliminarVenta(${v.id})" style="border:none;background:none;color:red;cursor:pointer;" title="Eliminar Venta"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                     <tr id="detalle-venta-${v.id}" style="display:none; background-color: #f9f9f9;">
                         <td colspan="5" style="padding: 10px; font-size: 0.85rem; border-bottom: 2px solid #ddd;">
                             <strong>Productos Comprados:</strong><br>
-                            ${v.items ? v.items.map(i => `- ${i.cantidad}x ${i.nombre} ($${(i.precio*i.cantidad).toLocaleString()})`).join('<br>') : 'Sin detalles'}
+                            ${v.items && v.items.length > 0 ? v.items.map(i => `- ${i.cantidad}x ${i.nombre} ($${(i.precio*i.cantidad).toLocaleString()})`).join('<br>') : 'Sin detalles'}
                         </td>
                     </tr>`;
             });
@@ -545,6 +582,18 @@
             const row = document.getElementById('detalle-venta-' + id);
             if(row.style.display === 'none') row.style.display = 'table-row';
             else row.style.display = 'none';
+        }
+
+        async function aprobarVentaEfectivo(id) {
+            if(confirm("¿Confirmar que recibiste el pago en efectivo?")) {
+                try {
+                    const res = await fetch(`${API_URL}/ventas/aprobar/${id}`, { method: 'PUT' });
+                    if(res.ok) {
+                        notificar("Pago aprobado", "success");
+                        abrirReportes();
+                    } else notificar("Error aprobando", "error");
+                } catch(e) { notificar("Error de conexión", "error"); }
+            }
         }
 
         // --- EDITAR VENTA ---
@@ -574,8 +623,8 @@
             });
             if(ventaEnEdicionTipo !== 'donacion') document.getElementById('edit-venta-total').value = nuevoTotal;
         }
-        function actualizarCantidadItem(i, val) { itemsEnEdicion[i].cantidad = parseInt(val) || 1; renderizarItemsEdicion(); }
-        function eliminarItemEdicion(i) { itemsEnEdicion.splice(i, 1); renderizarItemsEdicion(); }
+        function actualizarCantidadItem(idx, val) { itemsEnEdicion[idx].cantidad = parseInt(val) || 1; renderizarItemsEdicion(); }
+        function eliminarItemEdicion(idx) { itemsEnEdicion.splice(idx, 1); renderizarItemsEdicion(); }
         
         document.getElementById('form-editar-venta').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -664,7 +713,14 @@
             document.querySelectorAll('.sidebar').forEach(s=>s.classList.remove('active')); document.querySelectorAll('.modal-overlay').forEach(m=>m.style.display='none'); document.getElementById('overlay').classList.remove('active'); 
         }
         function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
-        function notificar(msg, type) { const d=document.createElement('div'); d.className=`toast ${type}`; d.innerHTML=`<span>${msg}</span>`; document.getElementById('toast-container').appendChild(d); setTimeout(()=>d.remove(),2000); }
+        function notificar(msg, type) {
+            // Elimina notificaciones previas
+            const prev = document.querySelector('.toast'); if(prev) prev.remove();
+            
+            const d = document.createElement('div'); d.className=`toast ${type}`; d.innerHTML=`<span>${msg}</span>`; 
+            document.getElementById('toast-container').appendChild(d); 
+            setTimeout(()=>d.remove(),2000); 
+        }
         
         // --- AUTH ---
         function toggleLogin() { if(esAdmin) { esAdmin=false; toggleAdmin(); renderizar(productosGlobal); } else { toggleAdmin(); document.getElementById('modal-login').style.display='flex'; } }
